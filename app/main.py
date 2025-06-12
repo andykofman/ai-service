@@ -38,6 +38,13 @@ def detect_intent(message: str):
     else:
         return "unknown"
 
+#webhook is the endpoint that receives the messages from the user
+#req is the request body
+#user_id is the id of the user
+#message is the message from the user
+#intent is the intent of the user
+#reply is the response to the user
+
 @app.post("/webhook")
 async def webhook(req: MessageRequest):
     user_id = req.user_id

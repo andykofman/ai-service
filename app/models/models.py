@@ -3,7 +3,7 @@ from sqlalchemy.orm import relationship
 from app.db.database import Base
 
 #user is a table that stores the users of the system
-class User(Base):
+class User(Base): #SQLAlchemy model (table)
     __tablename__ = "users"
     user_id = Column(String, primary_key=True, index=True)
     name = Column(String)

@@ -1,10 +1,12 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends
 from pydantic import BaseModel
 from fastapi.responses import JSONResponse
 
-from app.db.database import Base, engine
+from app.db.database import Base, engine, get_db
 from app.models import models
-
+from datetime import datetime, timezone
+import uuid
+from sqlalchemy.orm import Session
 
 #  create DB tables
 Base.metadata.create_all(bind=engine)
@@ -46,7 +48,7 @@ def detect_intent(message: str):
 #reply is the response to the user
 
 @app.post("/webhook")
-async def webhook(req: MessageRequest):
+async def webhook(req: MessageRequest, db: Session = Depends(get_db)):
     user_id = req.user_id
     message = req.message
 
@@ -59,6 +61,30 @@ async def webhook(req: MessageRequest):
     elif intent == "search_products":
         reply = search_products(user_id)
     else:
-        reply = "Sorry, I didn’t understand your request."
+        reply = "Sorry, I didn't understand your request."
+
+    now = datetime.now(timezone.utc).isoformat()
+
+    # Save user message
+    user_msg = models.Conversation(
+        conv_id=str(uuid.uuid4()),
+        user_id=user_id,
+        timestamp=now,
+        message=message,
+        direction="in"
+    )
+    db.add(user_msg)
+
+    # Save bot response
+    bot_msg = models.Conversation(
+        conv_id=str(uuid.uuid4()),
+        user_id=user_id,
+        timestamp=now,
+        message=reply,
+        direction="out"
+    )
+    db.add(bot_msg)
+
+    db.commit()
 
     return JSONResponse(content={"response": reply})

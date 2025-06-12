@@ -51,7 +51,19 @@ def detect_intent(message: str):
 async def webhook(req: MessageRequest, db: Session = Depends(get_db)):
     user_id = req.user_id
     message = req.message
+    
+    #save the user to the database
+    #if the user is not in the database, create a new user
+    #if the user is in the database, update the user
+    user = db.query(models.User).filter_by(user_id=user_id).first()
+    if not user:
+        user = models.User(user_id=user_id, name="Test User", email="test@example.com")
+        db.add(user)
+        db.commit()
 
+    db.commit()
+
+    #detect the intent of the user
     intent = detect_intent(message)
 
     if intent == "get_order_status":
@@ -64,7 +76,7 @@ async def webhook(req: MessageRequest, db: Session = Depends(get_db)):
         reply = "Sorry, I didn't understand your request."
 
     now = datetime.now(timezone.utc).isoformat()
-
+    #save the conversation to the database
     # Save user message
     user_msg = models.Conversation(
         conv_id=str(uuid.uuid4()),

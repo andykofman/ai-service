@@ -5,7 +5,8 @@ from fastapi.responses import JSONResponse
 from app.db.database import Base, engine
 from app.models import models
 
-# Automatically create DB tables
+
+#  create DB tables
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI()

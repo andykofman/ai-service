@@ -23,7 +23,7 @@ class Order(Base):
     user_id = Column(String, ForeignKey("users.user_id"))   #this is the foreign key to the user table (one to many relationship)
     product_id = Column(String, ForeignKey("products.product_id")) #this is the foreign key to the product table (one to many relationship)
     quantity = Column(Integer)
-    status = Column(String)
+    status = Column(String) #pending, shipped, delivered, cancelled
 
 #conversation is a table that stores the conversations of the users
 class Conversation(Base):

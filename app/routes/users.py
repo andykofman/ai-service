@@ -12,9 +12,9 @@ class UserBase(BaseModel):
     email: str
 
     class Config:
-        from_attributes = True  # This enables ORM mode
+        from_attributes = True  # This enables Pydantic to convert the SQLAlchemy model to a Pydantic model (ORM mode)
 
-class UserCreate(UserBase):
+class UserCreate(UserBase): #UserCreate (a Pydantic model) which we use for input validation, will implement later
     pass
 
 class UserResponse(UserBase):
@@ -39,7 +39,7 @@ def create_user(user: UserCreate, db: Session = Depends(get_db)):
     if existing:
         raise HTTPException(status_code=400, detail="User already exists")
     #create a new user
-    db_user = User(**user.model_dump()) #convert the pydantic model (user) into a python dictionary
+    db_user = User(**user.model_dump()) #convert/unpacking the pydantic model (user) into a python dictionary
     db.add(db_user)
     db.commit()
     db.refresh(db_user)

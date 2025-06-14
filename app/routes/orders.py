@@ -6,7 +6,7 @@ from pydantic import BaseModel, Field
 from typing import List, Literal
 import uuid
 
-from app.models.models import Order, User
+from app.models.models import Order, User, Product
 
 #API Router is used to define the routes for the orders
 #router is used to define the routes for the orders
@@ -22,9 +22,11 @@ class OrderBase(BaseModel):
     class Config:
         from_attributes = True #This enables Pydantic to convert the SQLAlchemy model to a Pydantic model (ORM mode)
 
+# Create API layer for the order
+#input
 class OrderCreate(OrderBase):
     pass
-
+#output
 class OrderResponse(OrderBase):
     order_id: str
 
@@ -51,10 +53,10 @@ def create_order(order:OrderCreate, db: Session = Depends(get_db)):
     user = db.query(User).filter_by(user_id=order.user_id).first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
-    # #validate product exists
-    # product = db.query(Product).filter_by(product_id=order.product_id).first()
-    # if not product: 
-    #     raise HTTPException(status_code=404, detail="Product not found")
+    #validate product exists
+    product = db.query(Product).filter_by(product_id=order.product_id).first()
+    if not product: 
+        raise HTTPException(status_code=404, detail="Product not found")
     
     #Step 2: create order
     order_id = str(uuid.uuid4())

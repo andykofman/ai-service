@@ -15,6 +15,7 @@ class Product(Base):
     product_id = Column(String, primary_key=True, index=True)
     name = Column(String)
     price = Column(Integer)
+    description = Column(String)
 
 #order is a table that stores the orders of the users
 class Order(Base):

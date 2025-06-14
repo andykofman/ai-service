@@ -1,7 +1,7 @@
 from fastapi import FastAPI, Depends
 from pydantic import BaseModel
 from fastapi.responses import JSONResponse
-from app.routes import users, orders
+from app.routes import users, orders, products
 from app.db.database import Base, engine, get_db
 from app.models import models
 from datetime import datetime, timezone
@@ -16,6 +16,7 @@ app = FastAPI()
 #include the routers
 app.include_router(users.router)
 app.include_router(orders.router)
+app.include_router(products.router)
 # Request schema
 class MessageRequest(BaseModel):
     user_id: str

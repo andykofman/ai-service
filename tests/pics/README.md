@@ -53,3 +53,36 @@ These pictures serve as visual documentation for:
 - Database interaction validation
 - Test case documentation
 
+## Example: Order and Product Relationship
+
+The following images in `02-database-monitoring/` demonstrate how an order references a product in the database:
+
+- **Order Entry:**  
+  `order_with_product_reference.png`
+- **Product Details:**  
+  `product_details_for_order.png`
+
+As shown, the `product_id` in the order matches the `product_id` in the products table, linking the order to the specific product.
+
+### Entity Relationship Diagram
+
+```mermaid
+erDiagram
+    ORDERS {
+        string order_id
+        string user_id
+        string product_id
+        int quantity
+        string status
+    }
+    PRODUCTS {
+        string product_id
+        string name
+        int price
+        string description
+    }
+    ORDERS ||--o{ PRODUCTS : "references"
+```
+
+This visual and diagrammatic documentation helps clarify the connection between orders and products in your system's database.
+

@@ -9,6 +9,18 @@ import uuid
 from sqlalchemy.orm import Session
 from pydantic import ConfigDict
 import os
+import logging
+from app.ai.intent_router import detect_intent_with_ai
+from dotenv import load_dotenv
+
+# Set up logging
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
+
+# Load environment variables
+logger.debug("Loading environment variables from .env file")
+load_dotenv()
+logger.debug(f"HF_API_TOKEN loaded: {'Yes' if os.getenv('HF_API_TOKEN') else 'No'}")
 
 #  create DB tables
 Base.metadata.create_all(bind=engine)
@@ -74,14 +86,17 @@ async def webhook(req: MessageRequest, db: Session = Depends(get_db)):
     db.commit()
 
     #detect the intent of the user
-    intent = detect_intent(message)
+    intent = detect_intent_with_ai(message)
 
-    if intent == "get_order_status":
-        reply = get_order_status(user_id)
+    if intent == "search_products":
+        products = db.query(models.Product).all()
+        reply = [f"{p.name} - ${p.price}" for p in products]
+    elif intent == "place_order":
+        reply = "Please use the 'Place Order' feature in the interface."
     elif intent == "update_profile":
-        reply = update_profile(user_id)
-    elif intent == "search_products":
-        reply = search_products(user_id)
+        reply = "Please use the 'Update Profile' option to modify your info."
+    elif intent == "get_order_status":
+        reply = "Please provide your order ID in the 'Order Status' section."
     else:
         reply = "Sorry, I didn't understand your request."
 

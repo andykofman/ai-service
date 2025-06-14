@@ -1,12 +1,14 @@
-from fastapi import FastAPI, Depends
+from fastapi import FastAPI, Depends, staticfiles
 from pydantic import BaseModel
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, FileResponse
 from app.routes import users, orders, products
 from app.db.database import Base, engine, get_db
 from app.models import models
 from datetime import datetime, timezone
 import uuid
 from sqlalchemy.orm import Session
+from pydantic import ConfigDict
+import os
 
 #  create DB tables
 Base.metadata.create_all(bind=engine)
@@ -17,6 +19,10 @@ app = FastAPI()
 app.include_router(users.router)
 app.include_router(orders.router)
 app.include_router(products.router)
+
+#static files
+app.mount("/static", staticfiles.StaticFiles(directory="static"), name="static")
+
 # Request schema
 class MessageRequest(BaseModel):
     user_id: str
@@ -104,3 +110,7 @@ async def webhook(req: MessageRequest, db: Session = Depends(get_db)):
     db.commit()
 
     return JSONResponse(content={"response": reply})
+
+@app.get("/")
+async def read_root():
+    return FileResponse("static/index.html")

@@ -4,6 +4,7 @@ from app.models.models import User
 from app.db.database import get_db
 from pydantic import BaseModel
 from typing import List
+from pydantic import ConfigDict
 
 # Pydantic models for request/response
 class UserBase(BaseModel):
@@ -11,8 +12,7 @@ class UserBase(BaseModel):
     name: str
     email: str
 
-    class Config:
-        from_attributes = True  # This enables Pydantic to convert the SQLAlchemy model to a Pydantic model (ORM mode)
+    model_config = ConfigDict(from_attributes=True) # This enables Pydantic to convert the SQLAlchemy model to a Pydantic model (ORM mode)
 
 class UserCreate(UserBase): #UserCreate (a Pydantic model) which we use for input validation, will implement later
     pass

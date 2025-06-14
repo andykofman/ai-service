@@ -5,7 +5,7 @@ from app.db.database import get_db
 from pydantic import BaseModel, Field
 from typing import List, Literal
 import uuid
-
+from pydantic import ConfigDict
 from app.models.models import Order, User, Product
 
 #API Router is used to define the routes for the orders
@@ -19,8 +19,7 @@ class OrderBase(BaseModel):
     quantity: int = Field(..., gt=0) #greater than 0
     status: Literal["pending", "shipped", "delivered", "cancelled"] 
 
-    class Config:
-        from_attributes = True #This enables Pydantic to convert the SQLAlchemy model to a Pydantic model (ORM mode)
+    model_config = ConfigDict(from_attributes=True) #This enables Pydantic to convert the SQLAlchemy model to a Pydantic model (ORM mode)
 
 # Create API layer for the order
 #input

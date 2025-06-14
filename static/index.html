@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>AI Assistant</title>
+  <style>
+    body { font-family: Arial; max-width: 600px; margin: 40px auto; }
+    .chat-box { border: 1px solid #ccc; padding: 20px; height: 400px; overflow-y: scroll; background: #f9f9f9; }
+    .msg { margin: 10px 0; }
+    .msg.user { text-align: right; color: blue; }
+    .msg.bot { text-align: left; color: green; }
+  </style>
+</head>
+<body>
+  <h2>AI Chat Assistant</h2>
+  <div class="chat-box" id="chat"></div>
+  <input id="user_id" placeholder="Enter your user_id" />
+  <input id="input" placeholder="Type a message..." />
+  <button onclick="sendMessage()">Send</button>
+
+  <script>
+    async function sendMessage() {
+      const chat = document.getElementById('chat');
+      const input = document.getElementById('input');
+      const user_id = document.getElementById('user_id').value.trim();
+
+      if (!user_id || !input.value.trim()) return;
+
+      const msg = input.value;
+      chat.innerHTML += `<div class="msg user">${msg}</div>`;
+      input.value = '';
+
+      const response = await fetch('/webhook', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_id: user_id, message: msg })
+      });
+
+      const data = await response.json();
+      chat.innerHTML += `<div class="msg bot">${data.response}</div>`;
+      chat.scrollTop = chat.scrollHeight;
+    }
+  </script>
+</body>
+</html>

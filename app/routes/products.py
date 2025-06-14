@@ -5,6 +5,7 @@ from app.db.database import get_db
 from pydantic import BaseModel, Field
 from typing import List, Literal
 import uuid
+from pydantic import ConfigDict
 
 router = APIRouter()
 
@@ -13,8 +14,7 @@ class ProductBase(BaseModel):
     description: str
     price: int
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 class ProductCreate(ProductBase):
     pass

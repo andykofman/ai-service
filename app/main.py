@@ -2,7 +2,7 @@ from fastapi import FastAPI, Depends, staticfiles
 from pydantic import BaseModel
 from fastapi.responses import JSONResponse, FileResponse
 from app.routes import users, orders, products
-from app.db.database import Base, engine, get_db
+from app.db.database import Base, postgres_engine, get_db
 from app.models import models
 from datetime import datetime, timezone
 import uuid
@@ -12,18 +12,19 @@ import os
 import logging
 from app.ai.intent_router import detect_intent_with_ai
 from dotenv import load_dotenv
+from app.config import get_settings
 
 # Set up logging
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
-# Load environment variables
-logger.debug("Loading environment variables from .env file")
-load_dotenv()
-logger.debug(f"HF_API_TOKEN loaded: {'Yes' if os.getenv('HF_API_TOKEN') else 'No'}")
 
+
+# Load environment variables and settings
+settings = get_settings()
+logger.debug("Settings loaded")
 #  create DB tables
-Base.metadata.create_all(bind=engine)
+Base.metadata.create_all(bind=postgres_engine)
 
 app = FastAPI()
 

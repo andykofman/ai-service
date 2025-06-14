@@ -1,0 +1,60 @@
+Steps to Set Up Supabase Database Connection:
+
+1. Create a Supabase Account and Project:
+   - Go to https://supabase.com/
+   - Sign up or log in
+   - Create a new project
+   - Choose a database password (save it securely)
+   - Wait for your database to be provisioned
+
+2. Get Your Supabase Credentials:
+   - Go to your project dashboard
+   - Navigate to Project Settings > API
+   - Copy these values:
+     * Project URL (looks like: https://[YOUR-PROJECT-ID].supabase.co)
+     * anon/public key (starts with 'eyJ...')
+   - Go to Project Settings > Database
+   - Copy your database connection string
+
+3. Create .env File:
+   Create a new file named '.env' in your project root and add:
+   ```
+   # Current PostgreSQL (keep this if you want to maintain local development)
+   POSTGRES_DATABASE_URL=postgresql://user:password@localhost:5432/ai_agent
+
+   # Supabase Configuration
+   SUPABASE_URL=your_project_url_from_step_2
+   SUPABASE_KEY=your_anon_key_from_step_2
+   SUPABASE_DATABASE_URL=your_connection_string_from_step_2
+   ```
+
+4. Install Dependencies:
+   Run: pip install -r requirements.txt
+
+5. Test the Connection:
+   Create a test file 'test_supabase.py':
+   ```python
+   from app.db.database import get_supabase
+
+   supabase = get_supabase()
+   try:
+       # Test the connection
+       response = supabase.table('users').select("*").limit(1).execute()
+       print("Connection successful!")
+   except Exception as e:
+       print(f"Connection failed: {str(e)}")
+   ```
+
+6. Update Your Models:
+   - Go to Supabase dashboard
+   - Use the Table Editor to create tables matching your SQLAlchemy models
+   - Or use database migrations with Alembic
+
+7. Deploy to Vercel:
+   - Add these environment variables to your Vercel project:
+     * SUPABASE_URL
+     * SUPABASE_KEY
+     * SUPABASE_DATABASE_URL
+
+Note: Keep your .env file secure and never commit it to version control.
+      Add it to .gitignore if not already there. 

@@ -36,8 +36,19 @@
         body: JSON.stringify({ user_id: user_id, message: msg })
       });
 
-      const data = await response.json();
-      chat.innerHTML += `<div class="msg bot">${data.response}</div>`;
+      let data = {};
+      try {
+        data = await response.json();
+      } catch (e) {
+        // ignore JSON parse errors
+      }
+
+      if (response.ok && data.response) {
+        chat.innerHTML += `<div class="msg bot">${data.response}</div>`;
+      } else {
+        const err = data.response || data.error || data.detail || 'Unexpected error';
+        chat.innerHTML += `<div class="msg bot">${err}</div>`;
+      }
       chat.scrollTop = chat.scrollHeight;
     }
   </script>

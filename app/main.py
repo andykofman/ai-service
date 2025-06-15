@@ -83,7 +83,7 @@ async def webhook(req: MessageRequest, db: Session = Depends(get_db)):
         logger.debug(f"Supabase configured: {'Yes' if settings.SUPABASE_URL and settings.SUPABASE_KEY else 'No'}")
         logger.debug(f"Processing webhook request for user {user_id} with message: {message}")
         
-        #save the user to the database
+        # save the user to the database (best effort)
         try:
             user = db.query(models.User).filter_by(user_id=user_id).first()
             if not user:
@@ -93,8 +93,8 @@ async def webhook(req: MessageRequest, db: Session = Depends(get_db)):
                 db.commit()
                 logger.debug("New user created successfully")
         except Exception as e:
+            # Log the error but continue so the request still succeeds
             logger.error(f"Database error while handling user: {str(e)}")
-            raise HTTPException(status_code=500, detail="Database error while handling user")
 
         #detect the intent of the user
         try:
@@ -153,7 +153,7 @@ async def webhook(req: MessageRequest, db: Session = Depends(get_db)):
         return JSONResponse(content={"response": reply})
     except Exception as e:
         logger.error(f"Unexpected error in webhook: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
+        return JSONResponse(status_code=500, content={"error": "Internal server error"})
 
 @app.get("/")
 async def read_root():

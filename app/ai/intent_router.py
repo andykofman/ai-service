@@ -16,7 +16,9 @@ CANDIDATE_LABELS = [
     "search_products",
     "place_order",
     "update_profile",
-    "get_order_status"
+    "get_order_status",
+    "greeting",
+    "farewell"
 ]
 
 def get_headers():

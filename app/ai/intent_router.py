@@ -10,14 +10,7 @@ load_dotenv()
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
-HF_API_TOKEN = os.getenv("HF_API_TOKEN")  # Store your token in .env or OS env
-logger.debug(f"HF_API_TOKEN loaded: {'Yes' if HF_API_TOKEN else 'No'}")
-
 API_URL = "https://api-inference.huggingface.co/models/facebook/bart-large-mnli"
-
-HEADERS = {
-    "Authorization": f"Bearer {HF_API_TOKEN}"
-}
 
 CANDIDATE_LABELS = [
     "search_products",
@@ -26,20 +19,33 @@ CANDIDATE_LABELS = [
     "get_order_status"
 ]
 
+def get_headers():
+    """Get headers with the HF API token."""
+    token = os.getenv("HF_API_TOKEN")
+    if not token:
+        logger.error("HF_API_TOKEN not found in environment variables")
+        raise ValueError("HF_API_TOKEN not found in environment variables")
+    return {"Authorization": f"Bearer {token}"}
+
 def detect_intent_with_ai(message: str) -> str:
-    payload = {
-        "inputs": message,
-        "parameters": {
-            "candidate_labels": CANDIDATE_LABELS
+    try:
+        headers = get_headers()
+        payload = {
+            "inputs": message,
+            "parameters": {
+                "candidate_labels": CANDIDATE_LABELS
+            }
         }
-    }
 
-    logger.debug(f"Making request to {API_URL} with headers: {HEADERS}")
-    response = requests.post(API_URL, headers=HEADERS, json=payload)
-    result = response.json()
+        logger.debug(f"Making request to {API_URL}")
+        response = requests.post(API_URL, headers=headers, json=payload)
+        result = response.json()
 
-    if "error" in result:
-        logger.error(f"Hugging Face API error: {result['error']}")
+        if "error" in result:
+            logger.error(f"Hugging Face API error: {result['error']}")
+            return "unknown"
+
+        return result["labels"][0]
+    except Exception as e:
+        logger.error(f"Error in detect_intent_with_ai: {str(e)}")
         return "unknown"
-
-    return result["labels"][0]

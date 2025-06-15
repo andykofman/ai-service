@@ -20,6 +20,16 @@ This repository contains a small FastAPI service that demonstrates basic CRUD op
    ```
 4. Open `http://localhost:8000` to view the sample chat UI.
 
+## Running with Docker
+You can also start the service using Docker Compose, which sets up the
+application, a Postgres database and the mock API all at once:
+
+```bash
+docker compose up --build
+```
+
+After the containers start, open `http://localhost:8000` to use the service.
+
 ## Documentation
 - [Architecture Overview](docs/architecture.md)
 - [API Reference](docs/api_reference.md)

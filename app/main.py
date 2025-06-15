@@ -13,6 +13,7 @@ import logging
 from app.ai.intent_router import detect_intent_with_ai
 from dotenv import load_dotenv
 from app.config import get_settings
+from fastapi import HTTPException
 
 # Set up logging
 logging.basicConfig(level=logging.DEBUG)
@@ -73,60 +74,82 @@ def detect_intent(message: str):
 
 @app.post("/webhook")
 async def webhook(req: MessageRequest, db: Session = Depends(get_db)):
-    user_id = req.user_id
-    message = req.message
-    
-    #save the user to the database
-    #if the user is not in the database, create a new user
-    #if the user is in the database, update the user
-    user = db.query(models.User).filter_by(user_id=user_id).first()
-    if not user:
-        user = models.User(user_id=user_id, name="Test User", email="test@example.com")
-        db.add(user)
-        db.commit()
+    try:
+        user_id = req.user_id
+        message = req.message
+        
+        logger.debug(f"Processing webhook request for user {user_id} with message: {message}")
+        
+        #save the user to the database
+        try:
+            user = db.query(models.User).filter_by(user_id=user_id).first()
+            if not user:
+                logger.debug(f"Creating new user with ID: {user_id}")
+                user = models.User(user_id=user_id, name="Test User", email="test@example.com")
+                db.add(user)
+                db.commit()
+                logger.debug("New user created successfully")
+        except Exception as e:
+            logger.error(f"Database error while handling user: {str(e)}")
+            raise HTTPException(status_code=500, detail="Database error while handling user")
 
-    db.commit()
+        #detect the intent of the user
+        try:
+            intent = detect_intent_with_ai(message)
+            logger.debug(f"Detected intent: {intent}")
+        except Exception as e:
+            logger.error(f"Error detecting intent: {str(e)}")
+            intent = "unknown"
 
-    #detect the intent of the user
-    intent = detect_intent_with_ai(message)
+        if intent == "search_products":
+            try:
+                products = db.query(models.Product).all()
+                reply = [f"{p.name} - ${p.price}" for p in products]
+            except Exception as e:
+                logger.error(f"Error fetching products: {str(e)}")
+                reply = "Sorry, I couldn't fetch the products at the moment."
+        elif intent == "place_order":
+            reply = "Please use the 'Place Order' feature in the interface."
+        elif intent == "update_profile":
+            reply = "Please use the 'Update Profile' option to modify your info."
+        elif intent == "get_order_status":
+            reply = "Please provide your order ID in the 'Order Status' section."
+        else:
+            reply = "Sorry, I didn't understand your request."
 
-    if intent == "search_products":
-        products = db.query(models.Product).all()
-        reply = [f"{p.name} - ${p.price}" for p in products]
-    elif intent == "place_order":
-        reply = "Please use the 'Place Order' feature in the interface."
-    elif intent == "update_profile":
-        reply = "Please use the 'Update Profile' option to modify your info."
-    elif intent == "get_order_status":
-        reply = "Please provide your order ID in the 'Order Status' section."
-    else:
-        reply = "Sorry, I didn't understand your request."
+        now = datetime.now(timezone.utc).isoformat()
+        
+        try:
+            # Save user message
+            user_msg = models.Conversation(
+                conv_id=str(uuid.uuid4()),
+                user_id=user_id,
+                timestamp=now,
+                message=message,
+                direction="in"
+            )
+            db.add(user_msg)
 
-    now = datetime.now(timezone.utc).isoformat()
-    #save the conversation to the database
-    # Save user message
-    user_msg = models.Conversation(
-        conv_id=str(uuid.uuid4()),
-        user_id=user_id,
-        timestamp=now,
-        message=message,
-        direction="in"
-    )
-    db.add(user_msg)
+            # Save bot response
+            bot_msg = models.Conversation(
+                conv_id=str(uuid.uuid4()),
+                user_id=user_id,
+                timestamp=now,
+                message=reply,
+                direction="out"
+            )
+            db.add(bot_msg)
 
-    # Save bot response
-    bot_msg = models.Conversation(
-        conv_id=str(uuid.uuid4()),
-        user_id=user_id,
-        timestamp=now,
-        message=reply,
-        direction="out"
-    )
-    db.add(bot_msg)
+            db.commit()
+            logger.debug("Conversation saved successfully")
+        except Exception as e:
+            logger.error(f"Error saving conversation: {str(e)}")
+            # Don't raise here, we still want to return the response even if saving fails
 
-    db.commit()
-
-    return JSONResponse(content={"response": reply})
+        return JSONResponse(content={"response": reply})
+    except Exception as e:
+        logger.error(f"Unexpected error in webhook: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/")
 async def read_root():

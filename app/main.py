@@ -2,7 +2,7 @@ from fastapi import FastAPI, Depends, staticfiles
 from pydantic import BaseModel
 from fastapi.responses import JSONResponse, FileResponse
 from app.routes import users, orders, products
-from app.db.database import Base, postgres_engine, get_db
+from app.db.database import Base, engine, get_db
 from app.models import models
 from datetime import datetime, timezone
 import uuid
@@ -18,13 +18,14 @@ from app.config import get_settings
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
-
-
 # Load environment variables and settings
 settings = get_settings()
 logger.debug("Settings loaded")
-#  create DB tables
-Base.metadata.create_all(bind=postgres_engine)
+
+# Create DB tables only in development
+if settings.ENV == "development":
+    Base.metadata.create_all(bind=engine)
+    logger.debug("Database tables created in development mode")
 
 app = FastAPI()
 

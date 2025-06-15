@@ -6,9 +6,9 @@ from functools import lru_cache
 
 settings = get_settings()
 
-# PostgreSQL Database Engine
-postgres_engine = create_engine(settings.POSTGRES_DATABASE_URL)
-PostgresSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=postgres_engine)
+# Database Engine (will use either PostgreSQL or Supabase based on environment)
+engine = create_engine(settings.DATABASE_URL)
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 # Base class for SQLAlchemy models
 Base = declarative_base()
@@ -21,7 +21,7 @@ def get_supabase() -> Client:
     return create_client(settings.SUPABASE_URL, settings.SUPABASE_KEY)
 
 def get_db():
-    db = PostgresSessionLocal()
+    db = SessionLocal()
     try:
         yield db
     finally:

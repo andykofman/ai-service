@@ -78,6 +78,10 @@ async def webhook(req: MessageRequest, db: Session = Depends(get_db)):
         user_id = req.user_id
         message = req.message
         
+        logger.debug(f"Environment: {settings.ENV}")
+        logger.debug(f"Database URL configured: {'Yes' if settings.DATABASE_URL else 'No'}")
+        logger.debug(f"Supabase configured: {'Yes' if settings.SUPABASE_URL and settings.SUPABASE_KEY else 'No'}")
+        logger.debug(f"HF API Token configured: {'Yes' if HF_API_TOKEN else 'No'}")
         logger.debug(f"Processing webhook request for user {user_id} with message: {message}")
         
         #save the user to the database
@@ -99,6 +103,7 @@ async def webhook(req: MessageRequest, db: Session = Depends(get_db)):
             logger.debug(f"Detected intent: {intent}")
         except Exception as e:
             logger.error(f"Error detecting intent: {str(e)}")
+            logger.error(f"Full error details: {repr(e)}")
             intent = "unknown"
 
         if intent == "search_products":

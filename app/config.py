@@ -13,7 +13,6 @@ class Settings(BaseSettings):
     POSTGRES_DATABASE_URL: str = os.getenv(
         "POSTGRES_DATABASE_URL",
         "postgresql://user:password@localhost:5432/ai_agent"
-        "postgresql://user:password@localhost:5432/ai_agent",
     )
 
     # Generic database URL that can override others (useful for platforms like
@@ -47,4 +46,4 @@ class Settings(BaseSettings):
 @lru_cache()
 def get_settings():
     return Settings() 
-    return Settings()   
+

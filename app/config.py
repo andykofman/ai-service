@@ -36,16 +36,10 @@ class Settings(BaseSettings):
             if not self.SUPABASE_DATABASE_URL:
                 raise ValueError("SUPABASE_DATABASE_URL must be set in production")
             return self.SUPABASE_DATABASE_URL
-            # In production fall back to Supabase URL if provided, otherwise use
-            # the local PostgreSQL URL. This allows running on platforms like
-            # Vercel where a remote database connection string is supplied via
-            # environment variables.
-            if self.SUPABASE_DATABASE_URL:
-                return self.SUPABASE_DATABASE_URL
 
         return self.POSTGRES_DATABASE_URL
 
 @lru_cache()
 def get_settings():
     return Settings() 
-    return Settings() 
+    return Settings()   

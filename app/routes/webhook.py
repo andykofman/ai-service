@@ -4,9 +4,8 @@ from sqlalchemy.orm import Session
 import random
 import logging
 
-from app.schemas.request import MessageRequest
 from app.db.database import get_db
-from app.ai.intent_router import detect_intent_with_ai
+from app.schemas.request import MessageRequest
 from app.services.conversation_state import ConversationState
 from app.services.conversation import save_conversation
 from app.services.intent_handlers import (
@@ -15,6 +14,7 @@ from app.services.intent_handlers import (
     get_product_by_name,
     create_order
 )
+from app.ai.intent_router import detect_intent_with_ai
 from app.services.user_service import ensure_user_exists
 from app.models import models
 
@@ -30,7 +30,6 @@ async def webhook(req: MessageRequest, db: Session = Depends(get_db)):
 
     ensure_user_exists(db, user_id)
 
-    #  Step 1: Handle confirmation to browse products
     if state["awaiting_browse_confirmation"]:
         if message.lower() in ["yes", "show products", "show me products"]:
             products = get_all_products(db)
@@ -41,15 +40,12 @@ async def webhook(req: MessageRequest, db: Session = Depends(get_db)):
                 state["last_products_shown"] = products
                 state["awaiting_product_selection"] = True
                 state["awaiting_browse_confirmation"] = False
-                reply = "Here are our available products:\n" + "\n".join(
-                    [f"- {p.name} (${p.price})" for p in products]
-                ) + "\n\nPlease type the name of the product you'd like to order."
+                reply = "Here are our available products:\n" + "\n".join([f"- {p.name} (${p.price})" for p in products]) + "\n\nPlease type the name of the product you'd like to order."
         else:
             reply = "I'm not sure I understand. Would you like to see our available products? (Just say 'yes' or 'show products')"
         save_conversation(db, user_id, message, reply)
         return JSONResponse(content={"response": reply})
 
-    #  Step 2: Handle product selection from user
     if state["awaiting_product_selection"]:
         product = get_product_by_name(db, message)
         if product:
@@ -64,17 +60,12 @@ async def webhook(req: MessageRequest, db: Session = Depends(get_db)):
                     conversation_state.clear_state(user_id)
                 else:
                     state["last_products_shown"] = products
-                    reply = "Here are our available products:\n" + "\n".join(
-                        [f"- {p.name} (${p.price})" for p in products]
-                    ) + "\n\nPlease type the name of the product you'd like to order."
+                    reply = "Here are our available products:\n" + "\n".join([f"- {p.name} (${p.price})" for p in products]) + "\n\nPlease type the name of the product you'd like to order."
             else:
-                reply = "I couldn't find that product. Here are the available products again:\n" + "\n".join(
-                    [f"- {p.name} (${p.price})" for p in state["last_products_shown"]]
-                )
+                reply = "I couldn't find that product. Here are the available products again:\n" + "\n".join([f"- {p.name} (${p.price})" for p in state["last_products_shown"]])
         save_conversation(db, user_id, message, reply)
         return JSONResponse(content={"response": reply})
 
-    #  Step 3: Intent detection
     try:
         intent = detect_intent_with_ai(message)
         state["last_intent"] = intent
@@ -82,7 +73,6 @@ async def webhook(req: MessageRequest, db: Session = Depends(get_db)):
         logger.error(f"Error detecting intent: {str(e)}")
         intent = "unknown"
 
-    #  Step 4: Intent handling logic
     if intent == "search_products":
         products = get_all_products(db)
         if not products:
@@ -91,9 +81,7 @@ async def webhook(req: MessageRequest, db: Session = Depends(get_db)):
         else:
             state["last_products_shown"] = products
             state["awaiting_product_selection"] = True
-            reply = "Here are our available products:\n" + "\n".join(
-                [f"- {p.name} (${p.price})" for p in products]
-            ) + "\n\nPlease type the name of the product you'd like to order."
+            reply = "Here are our available products:\n" + "\n".join([f"- {p.name} (${p.price})" for p in products]) + "\n\nPlease type the name of the product you'd like to order."
 
     elif intent == "get_order_status":
         orders = get_user_orders(db, user_id)
@@ -117,9 +105,7 @@ async def webhook(req: MessageRequest, db: Session = Depends(get_db)):
         else:
             state["last_products_shown"] = products
             state["awaiting_product_selection"] = True
-            reply = "Here are our available products:\n" + "\n".join(
-                [f"- {p.name} (${p.price})" for p in products]
-            ) + "\n\nPlease type the name of the product you'd like to order."
+            reply = "Here are our available products:\n" + "\n".join([f"- {p.name} (${p.price})" for p in products]) + "\n\nPlease type the name of the product you'd like to order."
 
     elif intent == "greeting":
         reply = random.choice([

@@ -1,14 +1,14 @@
 # Environment Configuration
 
-Configuration is managed with environment variables. Create a `.env` file in the project root or set these variables in your deployment environment.
+Create a `.env` file in the project root or export these variables:
 
-Required variables:
+| Variable | Purpose | Default |
+|----------|---------|---------|
+| `ENV` | `development` or `production` | `development` |
+| `POSTGRES_DATABASE_URL` | local PostgreSQL connection | `postgresql://postgres:postgres@localhost:5432/postgres` |
+| `DATABASE_URL` | overrides other URLs when set | *(unset)* |
+| `SUPABASE_URL` / `SUPABASE_KEY` | Supabase credentials | *(unset)* |
+| `SUPABASE_DATABASE_URL` | Supabase database connection | *(unset)* |
+| `HF_API_TOKEN` | Hugging Face token for intent detection | *(unset)* |
 
-- `ENV` – set to `development` or `production` (default: `development`)
-- `POSTGRES_DATABASE_URL` – connection string for local PostgreSQL
-- `DATABASE_URL` – overrides other database URLs when set (useful on platforms like Vercel)
-- `SUPABASE_URL` and `SUPABASE_KEY` – Supabase project credentials
-- `SUPABASE_DATABASE_URL` – connection string to the Supabase database
-- `HF_API_TOKEN` – Hugging Face API token used for intent detection
-
-See `setup_supabase_steps.txt` for detailed instructions on connecting to Supabase.
+See `setup_supabase_steps.txt` for details on connecting to Supabase.

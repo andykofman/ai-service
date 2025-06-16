@@ -1,17 +1,18 @@
 # Architecture Overview
 
-This service is built with **FastAPI** and uses **SQLAlchemy** for ORM access. In development it connects to a local PostgreSQL database. In production you can point it to Supabase or another Postgres-compatible database.
+The service is built with **FastAPI** and uses **SQLAlchemy** to talk to a PostgreSQL or Supabase database. Incoming requests go through the API routers which call small service modules and persist data through SQLAlchemy models.
 
 ```
-client --HTTP--> FastAPI app --SQLAlchemy--> PostgreSQL/Supabase
+client -> FastAPI -> services -> database
 ```
 
-The main components are:
+Main packages:
 
-- **app/main.py** – FastAPI application entry point
-- **app/routes/** – Modular API routers for users, products and orders
-- **app/ai/** – Contains the intent detection helper using Hugging Face
-- **app/models/** – SQLAlchemy models
-- **app/db/** – Database session and Supabase client utilities
+- **app/main.py** – application setup and route registration
+- **app/routes/** – routers for users, products, orders and the chat webhook
+- **app/services/** – business logic and conversation handling
+- **app/models/** – SQLAlchemy models defining the tables
+- **app/ai/** – wraps the Hugging Face intent detection
+- **app/db/** – database session utilities
 
-There is also a minimal HTML client in `static/index.html` used to interact with the `/webhook` endpoint.
+Static files in `static/` provide a basic chat UI that posts messages to `/webhook`.

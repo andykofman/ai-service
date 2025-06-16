@@ -1,18 +1,11 @@
 # Running Tests
 
-The project uses **pytest**. Tests are located in the `tests/` directory.
+Tests use **pytest** and reside in the `tests/` folder.
 
-Create a virtual environment and install dependencies:
+1. Install the dependencies from `requirements.txt`.
+2. Run the suite:
+   ```bash
+   pytest
+   ```
 
-```bash
-pip install -r requirements.txt
-pip install pytest
-```
-
-Run all tests:
-
-```bash
-pytest
-```
-
-Some tests that require Supabase credentials will be skipped automatically if the credentials are not configured.
+Tests that require Supabase credentials are skipped automatically when the variables are missing.

@@ -1,24 +1,48 @@
 # API Reference
 
 ## Users
-- `GET /users` – List all users
-- `POST /users` – Create a new user
-
-## Products
-- `GET /products` – List all products
-- `POST /products` – Create a new product
-
-## Orders
-- `GET /orders` – List all orders
-- `GET /orders/{order_id}` – Retrieve a single order
-- `POST /orders` – Create an order
-
-## Chat Webhook
-- `POST /webhook` – Main interaction endpoint used by the sample chat client. Payload:
+- `GET /users` – list all users
+- `POST /users` – create a user
   ```json
   {
-    "user_id": "string",
-    "message": "string"
+    "user_id": "u1",
+    "name": "Jane",
+    "email": "jane@example.com"
   }
   ```
-  Returns `{ "response": "..." }` with the assistant reply.
+
+## Products
+- `GET /products` – list all products
+- `POST /products` – create a product
+  ```json
+  {
+    "product_id": "p1",
+    "name": "Widget",
+    "price": 10,
+    "description": "Small widget"
+  }
+  ```
+
+## Orders
+- `GET /orders` – list all orders
+- `GET /orders/{order_id}` – get one order
+- `POST /orders` – create an order
+  ```json
+  {
+    "order_id": "o1",
+    "user_id": "u1",
+    "product_id": "p1",
+    "quantity": 1,
+    "status": "pending"
+  }
+  ```
+
+## Chat Webhook
+- `POST /webhook` – send a message to the assistant
+  ```json
+  {
+    "user_id": "u1",
+    "message": "hello"
+  }
+  ```
+  Returns `{ "response": "..." }`.

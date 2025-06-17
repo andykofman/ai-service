@@ -2,53 +2,417 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>AI Assistant</title>
   <style>
-    body { font-family: Arial; max-width: 600px; margin: 40px auto; }
-    .chat-box { border: 1px solid #ccc; padding: 20px; height: 400px; overflow-y: scroll; background: #f9f9f9; }
-    .msg { margin: 10px 0; }
-    .msg.user { text-align: right; color: blue; }
-    .msg.bot { text-align: left; color: green; }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body { 
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .container {
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+      width: 100%;
+      max-width: 600px;
+      overflow: hidden;
+    }
+
+    .header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 24px;
+      text-align: center;
+    }
+
+    .header h2 {
+      font-size: 24px;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    .header p {
+      opacity: 0.9;
+      font-size: 14px;
+    }
+
+    .chat-container {
+      padding: 24px;
+    }
+
+    .chat-box { 
+      border: 1px solid #e1e5e9;
+      border-radius: 12px;
+      padding: 20px;
+      height: 400px;
+      overflow-y: scroll;
+      background: #f8f9fa;
+      margin-bottom: 20px;
+      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
+    }
+
+    .msg { 
+      margin: 16px 0;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .msg.user { 
+      align-items: flex-end;
+    }
+
+    .msg.bot { 
+      align-items: flex-start;
+    }
+
+    .msg-content {
+      max-width: 80%;
+      padding: 12px 16px;
+      border-radius: 18px;
+      font-size: 14px;
+      line-height: 1.4;
+      word-wrap: break-word;
+    }
+
+    .msg.user .msg-content {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border-bottom-right-radius: 4px;
+    }
+
+    .msg.bot .msg-content {
+      background: white;
+      color: #333;
+      border: 1px solid #e1e5e9;
+      border-bottom-left-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    }
+
+    .msg-timestamp {
+      font-size: 11px;
+      color: #999;
+      margin-top: 4px;
+      opacity: 0.7;
+    }
+
+    .input-section {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .user-id-section {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .user-id-section label {
+      font-size: 14px;
+      font-weight: 500;
+      color: #555;
+      min-width: 80px;
+    }
+
+    .input-field {
+      flex: 1;
+      padding: 12px 16px;
+      border: 2px solid #e1e5e9;
+      border-radius: 8px;
+      font-size: 14px;
+      transition: border-color 0.2s ease;
+      font-family: inherit;
+    }
+
+    .input-field:focus {
+      outline: none;
+      border-color: #667eea;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    .message-section {
+      display: flex;
+      gap: 12px;
+    }
+
+    .message-input {
+      flex: 1;
+    }
+
+    .send-btn {
+      padding: 12px 24px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      font-family: inherit;
+    }
+
+    .send-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    }
+
+    .send-btn:active {
+      transform: translateY(0);
+    }
+
+    .quick-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 16px;
+      flex-wrap: wrap;
+    }
+
+    .quick-btn {
+      padding: 8px 16px;
+      background: white;
+      color: #667eea;
+      border: 2px solid #667eea;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-family: inherit;
+    }
+
+    .quick-btn:hover {
+      background: #667eea;
+      color: white;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+    }
+
+    .loading {
+      display: none;
+      align-items: center;
+      gap: 8px;
+      color: #666;
+      font-size: 14px;
+      margin: 8px 0;
+    }
+
+    .loading-dots {
+      display: flex;
+      gap: 4px;
+    }
+
+    .loading-dots span {
+      width: 6px;
+      height: 6px;
+      background: #667eea;
+      border-radius: 50%;
+      animation: bounce 1.4s infinite ease-in-out;
+    }
+
+    .loading-dots span:nth-child(1) { animation-delay: -0.32s; }
+    .loading-dots span:nth-child(2) { animation-delay: -0.16s; }
+
+    @keyframes bounce {
+      0%, 80%, 100% { transform: scale(0); }
+      40% { transform: scale(1); }
+    }
+
+    @media (max-width: 480px) {
+      .container {
+        margin: 10px;
+        border-radius: 12px;
+      }
+      
+      .header {
+        padding: 20px;
+      }
+      
+      .chat-container {
+        padding: 16px;
+      }
+      
+      .user-id-section {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+      }
+      
+      .user-id-section label {
+        min-width: auto;
+      }
+    }
   </style>
 </head>
 <body>
-  <h2>AI Chat Assistant</h2>
-  <div class="chat-box" id="chat"></div>
-  <input id="user_id" placeholder="Enter your user_id" />
-  <input id="input" placeholder="Type a message..." />
-  <button onclick="sendMessage()">Send</button>
+  <div class="container">
+    <div class="header">
+      <h2>AI Chat Assistant</h2>
+      <p>Ask me about orders, products, or anything else!</p>
+    </div>
+    
+    <div class="chat-container">
+      <div class="chat-box" id="chat"></div>
+      
+      <div class="loading" id="loading">
+        <span>AI is thinking</span>
+        <div class="loading-dots">
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+      </div>
+      
+      <div class="input-section">
+        <div class="user-id-section">
+          <label for="user_id">User ID:</label>
+          <input id="user_id" class="input-field" placeholder="Enter your user_id" />
+        </div>
+        
+        <div class="message-section">
+          <input id="input" class="input-field message-input" placeholder="Type a message..." />
+          <button class="send-btn" onclick="sendMessage()">Send</button>
+        </div>
+        
+        <div class="quick-actions">
+          <button class="quick-btn" onclick="quickAction('View my orders')">View Orders</button>
+          <button class="quick-btn" onclick="quickAction('Show me products')">Browse Products</button>
+          <button class="quick-btn" onclick="quickAction('Hello')">Say Hello</button>
+          
+        </div>
+      </div>
+    </div>
+  </div>
 
   <script>
+    // Load user ID from localStorage if available
+    window.onload = function() {
+      const savedUserId = localStorage.getItem('ai_chat_user_id');
+      if (savedUserId) {
+        document.getElementById('user_id').value = savedUserId;
+      }
+    };
+
+    // Handle Enter key
+    document.getElementById('input').addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') {
+        sendMessage();
+      }
+    });
+
+    document.getElementById('user_id').addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') {
+        document.getElementById('input').focus();
+      }
+    });
+
+    function quickAction(message) {
+      document.getElementById('input').value = message;
+      sendMessage();
+    }
+
+    function getTimestamp() {
+      return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    }
+
+    function showLoading() {
+      document.getElementById('loading').style.display = 'flex';
+    }
+
+    function hideLoading() {
+      document.getElementById('loading').style.display = 'none';
+    }
+
     async function sendMessage() {
       const chat = document.getElementById('chat');
       const input = document.getElementById('input');
       const user_id = document.getElementById('user_id').value.trim();
 
-      if (!user_id || !input.value.trim()) return;
+      if (!user_id || !input.value.trim()) {
+        if (!user_id) {
+          alert('Please enter a User ID');
+          document.getElementById('user_id').focus();
+        } else {
+          alert('Please enter a message');
+          input.focus();
+        }
+        return;
+      }
+
+      // Save user ID to localStorage
+      localStorage.setItem('ai_chat_user_id', user_id);
 
       const msg = input.value;
-      chat.innerHTML += `<div class="msg user">${msg}</div>`;
+      const timestamp = getTimestamp();
+      
+      // Add user message
+      chat.innerHTML += `
+        <div class="msg user">
+          <div class="msg-content">${msg}</div>
+          <div class="msg-timestamp">${timestamp}</div>
+        </div>
+      `;
       input.value = '';
 
-      const response = await fetch('/webhook', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ user_id: user_id, message: msg })
-      });
+      showLoading();
 
-      let data = {};
       try {
-        data = await response.json();
-      } catch (e) {
-        // ignore JSON parse errors
-      }
+        const response = await fetch('/webhook', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ user_id: user_id, message: msg })
+        });
 
-      if (response.ok && data.response) {
-        chat.innerHTML += `<div class="msg bot">${data.response}</div>`;
-      } else {
-        const err = data.response || data.error || data.detail || 'Unexpected error';
-        chat.innerHTML += `<div class="msg bot">${err}</div>`;
+        let data = {};
+        try {
+          data = await response.json();
+        } catch (e) {
+          // ignore JSON parse errors
+        }
+
+        hideLoading();
+
+        const botTimestamp = getTimestamp();
+        
+        if (response.ok && data.response) {
+          chat.innerHTML += `
+            <div class="msg bot">
+              <div class="msg-content">${data.response}</div>
+              <div class="msg-timestamp">${botTimestamp}</div>
+            </div>
+          `;
+        } else {
+          const err = data.response || data.error || data.detail || 'Unexpected error';
+          chat.innerHTML += `
+            <div class="msg bot">
+              <div class="msg-content">${err}</div>
+              <div class="msg-timestamp">${botTimestamp}</div>
+            </div>
+          `;
+        }
+      } catch (error) {
+        hideLoading();
+        const errorTimestamp = getTimestamp();
+        chat.innerHTML += `
+          <div class="msg bot">
+            <div class="msg-content">Sorry, there was an error connecting to the server. Please try again.</div>
+            <div class="msg-timestamp">${errorTimestamp}</div>
+          </div>
+        `;
       }
+      
       chat.scrollTop = chat.scrollHeight;
     }
   </script>

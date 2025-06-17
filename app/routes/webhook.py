@@ -37,7 +37,10 @@ async def webhook(req: MessageRequest, db: Session = Depends(get_db)):
                 reply = "I'm sorry, but there are no products available at the moment."
                 conversation_state.clear_state(user_id)
             else:
-                state["last_products_shown"] = products
+                state["last_products_shown"] = [
+                    {"product_id": p.product_id, "name": p.name, "price": p.price, "description": p.description}
+                    for p in products
+                ]
                 state["awaiting_product_selection"] = True
                 state["awaiting_browse_confirmation"] = False
                 reply = "Here are our available products:\n" + "\n".join([f"- {p.name} (${p.price})" for p in products]) + "\n\nPlease type the name of the product you'd like to order."
@@ -59,10 +62,26 @@ async def webhook(req: MessageRequest, db: Session = Depends(get_db)):
                     reply = "I'm sorry, but there are no products available at the moment."
                     conversation_state.clear_state(user_id)
                 else:
-                    state["last_products_shown"] = products
+                    state["last_products_shown"] = [
+                        {"product_id": p.product_id, "name": p.name, "price": p.price, "description": p.description}
+                        for p in products
+                    ]
                     reply = "Here are our available products:\n" + "\n".join([f"- {p.name} (${p.price})" for p in products]) + "\n\nPlease type the name of the product you'd like to order."
             else:
-                reply = "I couldn't find that product. Here are the available products again:\n" + "\n".join([f"- {p.name} (${p.price})" for p in state["last_products_shown"]])
+                if state.get("last_products_shown"):
+                    reply = "I couldn't find that product. Here are the available products again:\n" + "\n".join([f"- {p['name']} (${p['price']})" for p in state["last_products_shown"]])
+                else:
+                    reply = "I couldn't find that product. Let me show you the available products again."
+                    products = get_all_products(db)
+                    if products:
+                        state["last_products_shown"] = [
+                            {"product_id": p.product_id, "name": p.name, "price": p.price, "description": p.description}
+                            for p in products
+                        ]
+                        reply = "Here are our available products:\n" + "\n".join([f"- {p.name} (${p.price})" for p in products]) + "\n\nPlease type the name of the product you'd like to order."
+                    else:
+                        reply = "I'm sorry, but there are no products available at the moment."
+                        conversation_state.clear_state(user_id)
         save_conversation(db, user_id, message, reply)
         return JSONResponse(content={"response": reply})
 
@@ -79,7 +98,10 @@ async def webhook(req: MessageRequest, db: Session = Depends(get_db)):
             reply = "I'm sorry, but there are no products available at the moment."
             conversation_state.clear_state(user_id)
         else:
-            state["last_products_shown"] = products
+            state["last_products_shown"] = [
+                {"product_id": p.product_id, "name": p.name, "price": p.price, "description": p.description}
+                for p in products
+            ]
             state["awaiting_product_selection"] = True
             reply = "Here are our available products:\n" + "\n".join([f"- {p.name} (${p.price})" for p in products]) + "\n\nPlease type the name of the product you'd like to order."
 
@@ -103,7 +125,10 @@ async def webhook(req: MessageRequest, db: Session = Depends(get_db)):
             reply = "I'm sorry, but there are no products available at the moment."
             conversation_state.clear_state(user_id)
         else:
-            state["last_products_shown"] = products
+            state["last_products_shown"] = [
+                {"product_id": p.product_id, "name": p.name, "price": p.price, "description": p.description}
+                for p in products
+            ]
             state["awaiting_product_selection"] = True
             reply = "Here are our available products:\n" + "\n".join([f"- {p.name} (${p.price})" for p in products]) + "\n\nPlease type the name of the product you'd like to order."
 

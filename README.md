@@ -10,11 +10,7 @@ Access the live application at [AI Service Demo](https://ai-service-katafast.ver
 
 ![AI Service Demo](Animation.gif)
 
-<!-- Add your video here by dragging and dropping a video file into this section when editing on GitHub -->
-<!-- Or use a YouTube link like this: -->
-<!-- [![Demo Video](https://img.youtube.com/vi/YOUR_VIDEO_ID/0.jpg)](https://www.youtube.com/watch?v=YOUR_VIDEO_ID) -->
 
-<!-- For a direct video file upload to GitHub, just drag and drop your video file here -->
 
 ## Features
 
